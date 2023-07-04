@@ -10,16 +10,20 @@ import Util.ConnectionUtil;
 /*A DAO is a class that mediates the transformation of data between the format of objects in Java to 
 rows in a database. */
 public class AccountDAO{
+    /******************************************Method to check if Username Already Exists**************************** */
     public boolean usernameExists(String username) throws SQLException {
-        Connection connection = ConnectionUtil.getConnection();
-        String checkUsernameSQL = "SELECT * FROM account WHERE username = ?";
-        PreparedStatement statement = connection.prepareStatement(checkUsernameSQL);
-        statement.setString(1, username);
-        ResultSet resultSet = statement.executeQuery();
+        Connection connection = ConnectionUtil.getConnection(); // retrieve database conncection 
+        String checkUsernameSQL = "SELECT * FROM account WHERE username = ?"; // selects all where usernmae matches 
+        PreparedStatement statement = connection.prepareStatement(checkUsernameSQL); // creating a prepar statemetn object via sql query 
+        statement.setString(1, username); // setting value of the first param to the username variable 
+        ResultSet resultSet = statement.executeQuery(); // The prepared statement is executed using executeQuery(), which returns a ResultSet object containing the results of the query execution.
 
-        return resultSet.next();
+        /*note, tried using if statetment - didn't fix  */
+        return resultSet.next(); // return result set object 
     }
+    /*************************************************************New User Registration *********************************************************** */
     public Account createAccount (Account account){
+         /*********************** Must check 1. username doesn't already exist in the system. 2. username is not blank 3. password is > 4char ********************/
         Connection connection = ConnectionUtil.getConnection();
         try {
 
@@ -31,7 +35,8 @@ public class AccountDAO{
             if (account.getPassword().length() < 4) {
                 throw new IllegalArgumentException("Password is too short! Must be over 4 characters! Because of you Pendejo, self-termination starts in 10 seconds!");
             }
-            if (usernameExists(account.getUsername())) { // using the usernameExists method (below) to check for duplicate username. 
+            if (usernameExists(account.getUsername())) { // using the usernameExists method (below) to check for duplicate username. if it already exists, then the usernameExists method will return it 
+                // and this condition will be true which will activate the exception */
                  throw new IllegalArgumentException("Username already exists!");
             }
 
@@ -59,17 +64,19 @@ public class AccountDAO{
         } catch (SQLException e) {
             // Handle any SQL exceptions that can occur in sql
             e.printStackTrace(); // print the stacktrace of the exception 
-        } finally {
-            // Close the connection and statement in a finally block
-            try {
-                connection.close();//closing connection in the database 
-            } catch (SQLException e) { // catching any slq exceptions 
-                e.printStackTrace();
-            }
-        }
+        } 
+        // finally {
+        //     // Close the connection and statement in a finally block
+        //     try {
+        //         connection.close();//closing connection in the database 
+        //     } catch (SQLException e) { // catching any slq exceptions 
+        //         e.printStackTrace();
+        //     }
+        // }
         return null; // the method will return null if the exceptions will occur during the excecution or if there is sql error. 
     }
 
+    /*****************************************Varifying user login credentials ************************************************** */
 /*method for retrieving an account based on the provided username and password; varifying user's login */
     public Account getAccountByUsernameAndPassword(String username, String password) throws SQLException {
         Connection connection = ConnectionUtil.getConnection();

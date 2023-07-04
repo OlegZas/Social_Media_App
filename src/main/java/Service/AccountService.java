@@ -23,24 +23,21 @@ public class AccountService {
         this.accountDAO = accountDAO; /*The parameterized constructor in the AccountService class allows us to inject 
         a specific instance of the AccountDAO class into the AccountService. */
     }
-//register user 
+/*************************USER REGISTRATION ************************* */
     public Account registerUser(String username, String password) {
 
-        // Validating inputs (this is first layer; if this condition is not met then method will proceed to AccountDAO, if met, it will return null)
+        // Validating inputs (this is first layer; if this condition is FALSE then method will proceed to AccountDAO, if true, it will return null)
         if (username.isBlank()) {
             return null; 
-            
         }
         if (password.length() < 4) {
             return null; 
-           
         }
         try {
-        if (accountDAO.usernameExists(username)) {
+        if (accountDAO.usernameExists(username)) {//callinng username from DAO vwith username parameter (if true - user exists, returns null)
             return null; 
             // throw new IllegalArgumentException("Username already exists!");
-        }
-
+          }
             // Create a new Account object with the provided username and password
             Account account = new Account(username, password);
             // Persist the new account in the database using the AccountDAO
@@ -48,10 +45,9 @@ public class AccountService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
-    }
+        return null;  }
 
-//method for handling the login functionality 
+/***************************USER LOGIN ********************************** */
     public Account loginUser(String username, String password) {
         try {
             Account account = accountDAO.getAccountByUsernameAndPassword(username, password);

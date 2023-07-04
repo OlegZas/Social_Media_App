@@ -12,26 +12,39 @@ public class MessageDAO {
     public MessageDAO() {
         this.connection = ConnectionUtil.getConnection();
     }
-/*Method to delete an existing message  */
-    public Message deleteMessage(int message_id) {
-        try {
-            PreparedStatement statement = connection.prepareStatement(
-                    "DELETE FROM message WHERE message_id = ?");
-            statement.setInt(1, message_id);
-            int rowsAffected = statement.executeUpdate();
-            if (rowsAffected > 0) {
-                // Fetch the deleted message and return it
-                return getMessageById(message_id);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+/*****************************DELETING A MESSAGE  ***********************************************/
+    public Message deleteMessage(int message_id) throws SQLException { //declaring a method that returns Message object and takes in message_id parameter 
+        // Check if the message exists
+        PreparedStatement stmt = connection.prepareStatement( /* creatoomg a prepared stmt object   */
+                         "DELETE FROM message WHERE message_id = ?"); // deleting a row where message-id matches
+                 stmt.setInt(1, message_id); // setting placeholder to message-id
+        Message message = getMessageById(message_id);
+      if (message == null) {
+        // Message not found, return an empty response
         return null;
-    }
-    
+      }else {
+        return getMessageById(message_id);
+   
+      }}
+    //     return null; // if no rows were deleted it will return null 
+ /***************************************OLD: gave an error - deleting a message********************* */   
+    // public Message deleteMessage(int message_id) { //declaring a method that returns Message object and takes in message_id parameter
+    //     try {
+    //         PreparedStatement stmt = connection.prepareStatement( /* creatoomg a prepared stmt object   */
+    //                 "DELETE FROM message WHERE message_id = ?"); // deleting a row where message-id matches
+    //         stmt.setInt(1, message_id); // setting placeholder to message-id
+    //         int rowsAffected = stmt.executeUpdate(); // executing stmt - it returns rows affected intgr and stores in rowsAffected*/
+    //         if (rowsAffected > 0) { // checks if rows affected  > 0
+    //             return getMessageById(message_id); // calling getmesbyid and returning the deleted message */
+    //         }
+    //     } catch (SQLException e) {
+    //         e.printStackTrace();// info about the exception that occured
+    //     }
+    //     return null; // if no rows were deleted it will return null
+    // }
 
 
-
+/********************************************CREATING A MESSAGE ***************************************** */
     public Message createMessage(int posted_by, String message_text, long time_posted_epoch) {
         try {
             // //adding validation to check if the message is not blank before executing sql statement (adding message)
@@ -60,26 +73,26 @@ public class MessageDAO {
         }
         return null;
     }
-
-    public List<Message> getAllMessages() {
+/*********************************GET ALL MESSAGES ************************************************ */
+    public List<Message> getAllMessages() { // creating an empty list to store retreived values */
         List<Message> messages = new ArrayList<>();
         try {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM message");
-            while (resultSet.next()) {
-                int messageId = resultSet.getInt("message_id");
+            Statement stmt = connection.createStatement(); // creatung stmt object to execute slq*/
+            ResultSet resultSet = stmt.executeQuery("SELECT * FROM message"); /* executing sql to retreive all msgs */
+            while (resultSet.next()) {// iterating over each orw in the resultSet obj*/
+                int messageId = resultSet.getInt("message_id");/*extracting values from columns and assigning to messageID etc. */
                 int postedBy = resultSet.getInt("posted_by");
                 String messageText = resultSet.getString("message_text");
                 long timePostedEpoch = resultSet.getLong("time_posted_epoch");
-                Message message = new Message(messageId, postedBy, messageText, timePostedEpoch);
-                messages.add(message);
+                Message message = new Message(messageId, postedBy, messageText, timePostedEpoch);/* creating a Message's object via extracted values  */
+                messages.add(message); // adding single msg object to the list of messages 
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return messages;
+        return messages; // returning the list of messages 
     }
-
+/*************************************GET MESSAGES BY MESSAGE ID ************************************************* */
     public Message getMessageById(int message_id) {
         try {
             PreparedStatement statement = connection.prepareStatement(
@@ -98,7 +111,7 @@ public class MessageDAO {
         }
         return null;
     }
-
+/********************************************* CHECK IF USER (account_id) EXISTS IN THE SYSTEM ********************************** */
     public boolean userExists(int user_id) {
         try {
             PreparedStatement statement = connection.prepareStatement(
@@ -111,7 +124,7 @@ public class MessageDAO {
         }
         return false;
     }
-
+/**********************************************GETTING MESSAGE BY ACCOUNT ID ************************************ */
     public List<Message> getMessagesByUser(int account_id) {
         List<Message> messages = new ArrayList<>();
         try {
@@ -132,4 +145,9 @@ public class MessageDAO {
         }
         return messages;
     }
+/* **************UPDATING A MESSAGE *********************** */
+
+
+
+    
 }
