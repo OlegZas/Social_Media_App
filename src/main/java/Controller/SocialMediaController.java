@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import Model.Account;
@@ -48,9 +49,36 @@ public class SocialMediaController {
         app.get("/accounts/{account_id}/messages", this::getMessagesByUserHandler); // Adding the getMessagesByUser endpoint
         app.get("/messages", this::getAllMessagesHandler); // Adding the getAllMessages endpoint
         app.get("/messages/{message_id}", this::getMessageHandler);
-        
+        app.patch("/messages/{message_id}", this::updateMessageHandler); // Adding the updateMessage endpoint
         return app;
     }
+    
+    private void updateMessageHandler(Context ctx) throws JsonProcessingException, SQLException {
+        ObjectMapper mapper = new ObjectMapper();
+        int messageId = Integer.parseInt(ctx.pathParam("message_id"));
+        JsonNode requestBody = mapper.readTree(ctx.body());
+    
+        if (!requestBody.has("message_text")) {
+            ctx.status(400);
+            return;
+        }
+    
+        String newMessageText = requestBody.get("message_text").asText();
+        if (newMessageText.isBlank() || newMessageText.length() > 254) {
+            ctx.status(400);
+            return;
+        }
+    
+        Message updatedMessage = messageService.updateMessageText(messageId, newMessageText);
+    
+        if (updatedMessage != null) {
+            ctx.json(mapper.writeValueAsString(updatedMessage));
+            ctx.status(200);
+        } else {
+            ctx.status(400);
+        }
+    }
+    
     /*************************************CREATING ACCOUNT ************************************************** */
     private void postAccountHandler(Context ctx) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper(); // creating object mapper instance (from Jackson libary) to convert Java objects to JSON*/
@@ -151,6 +179,7 @@ private void getMessageHandler(Context ctx) throws JsonProcessingException {
         ctx.status(200); // Setting an empty response body when the message is not found
     }
 }
+
 }
 
 

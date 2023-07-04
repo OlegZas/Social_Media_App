@@ -56,7 +56,25 @@ createMessage method of the messageDAO object to actually create the message in 
     // public boolean messageExists(int message_id) {
     //     return messageDAO.messageExists(message_id);
     // }
+    // public boolean messageExists(int message_id) {
+    //     return messageDAO.messageExists(message_id);
+    // }
 
+    public Message updateMessageText(int message_id, String newMessageText) throws SQLException {
+        // Check if the message exists
+        Message existingMessage = getMessageById(message_id);
+        if (existingMessage == null) {
+            return null;
+        }
+
+        // Check if the new message text is not blank and does not exceed 255 characters
+        if (newMessageText == null || newMessageText.isBlank() || newMessageText.length() > 255) {
+            return null;
+        } else {
+
+        // Update the message text through the DAO
+        return messageDAO.updateMessageText(message_id, newMessageText);}
+    }
 
 
 }

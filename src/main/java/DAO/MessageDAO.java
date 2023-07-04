@@ -146,8 +146,53 @@ public class MessageDAO {
         return messages;
     }
 /* **************UPDATING A MESSAGE *********************** */
+public Message updateMessageText(int message_id, String message_text) throws SQLException {
+    // try {
+    //     // Check if the message exists
+    //     if (!messageExists(message_id)) {
+    //         return null;
+    //     }
+        Message existingMessage = getMessageById(message_id);
+        if (existingMessage == null) {
+            throw new IllegalArgumentException("You did not provide a username bonita!");
+        }
+        // Check if the new message text is not blank and does not exceed 255 characters
+        if (message_text == null || message_text.isBlank() || message_text.length() > 255) {
+            throw new IllegalArgumentException("You did not provide a username bonita!");
+        }else {
+
+        // Update the message text
+        PreparedStatement statement = connection.prepareStatement(
+                "UPDATE message SET message_text = ? WHERE message_id = ?");
+        statement.setString(1, message_text);
+        statement.setInt(2, message_id);
+        int rowsAffected = statement.executeUpdate();
+
+        if (rowsAffected > 0) {
+            return getMessageById(message_id);
+        }return null;
+    } }
+    // catch (SQLException e) {
+    //     e.printStackTrace();
+    // 
+}
+    
+
+
+// public boolean messageExists(int message_id) {
+//     try {
+//         PreparedStatement statement = connection.prepareStatement(
+//                 "SELECT * FROM message WHERE message_id = ?");
+//         statement.setInt(1, message_id);
+//         ResultSet resultSet = statement.executeQuery();
+//         return resultSet.next();
+//     } catch (SQLException e) {
+//         e.printStackTrace();
+//     }
+//     return false;
+// }
 
 
 
     
-}
+
