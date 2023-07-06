@@ -24,7 +24,9 @@ public class AccountDAO{
     /*************************************************************New User Registration *********************************************************** */
     public Account createAccount (Account account){
          /*********************** Must check 1. username doesn't already exist in the system. 2. username is not blank 3. password is > 4char ********************/
-        Connection connection = ConnectionUtil.getConnection();
+        Connection connection = ConnectionUtil.getConnection(); /*  this can be declared at the class level scope rather than 
+            method level, but i am not going to change it while everything works - хотел менять, но понял что бес попутал 
+            и трогать не стоит пока все работает, пошло оно*/
         try {
 
             // //adding validation to check if the usernmae is not blank before executing sql statement (adding user)
@@ -79,14 +81,14 @@ public class AccountDAO{
     /*****************************************Varifying user login credentials ************************************************** */
 /*method for retrieving an account based on the provided username and password; varifying user's login */
     public Account getAccountByUsernameAndPassword(String username, String password) throws SQLException {
-        Connection connection = ConnectionUtil.getConnection();
-        String getAccountSQL = "SELECT * FROM account WHERE username = ? AND password = ?";
-        PreparedStatement statement = connection.prepareStatement(getAccountSQL);
-        statement.setString(1, username);
-        statement.setString(2, password);
-        ResultSet resultSet = statement.executeQuery();
+        Connection connection = ConnectionUtil.getConnection(); // establishing connection to the database 
+        String getAccountSQL = "SELECT * FROM account WHERE username = ? AND password = ?";/*preparing the SQL stmt */
+        PreparedStatement loginstmt = connection.prepareStatement(getAccountSQL);
+        loginstmt.setString(1, username);
+        loginstmt.setString(2, password);
+        ResultSet resultSet = loginstmt.executeQuery(); // executing sql
     
-        if (resultSet.next()) {
+        if (resultSet.next()) {// if result set contains a row then todo es bien, continuamos 
             int accountId = resultSet.getInt("account_id");
             String retrievedUsername = resultSet.getString("username");
             String retrievedPassword = resultSet.getString("password");

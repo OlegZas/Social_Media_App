@@ -52,27 +52,36 @@ public class SocialMediaController {
         app.patch("/messages/{message_id}", this::updateMessageHandler); // Adding the updateMessage endpoint
         return app;
     }
-    
+    /***************************UDATING A MESSAGE********************************************** */
     private void updateMessageHandler(Context ctx) throws JsonProcessingException, SQLException {
-        ObjectMapper mapper = new ObjectMapper();
-        int messageId = Integer.parseInt(ctx.pathParam("message_id"));
-        JsonNode requestBody = mapper.readTree(ctx.body());
+        ObjectMapper mapper = new ObjectMapper(); /*  creating an instance of ObjectMapper class, from Jackon 
+       library, to be used in serialization or desiralization */
+        int messageId = Integer.parseInt(ctx.pathParam("message_id"));/*Retrieving the message_id path 
+        parameter from the request context (ctx) and converting it to an integer. */
+        JsonNode requestBody = mapper.readTree(ctx.body());/*Reading the request body as a JSON tree, using the 
+        readTree method of the ObjectMapper, to access individual fields within the JSON. */
     
-        if (!requestBody.has("message_text")) {
+        if (!requestBody.has("message_text")) {/*checkING if the JSON request body (above) contains
+            message-text */
+            ctx.status(400); // if no messagetext, we get a Bad Request status (client error)
+            return;
+        }
+    
+        String newMessageText = requestBody.get("message_text").asText();/*retreiving messagetext field from 
+        JSON body and assinging it to newMessageText string */
+        if (newMessageText.isBlank() || newMessageText.length() > 254) { /*Checking if the newMessageText is blank or 
+            its length exceeds 254 characters.  - if ture, then bad request (client error)*/
             ctx.status(400);
             return;
         }
     
-        String newMessageText = requestBody.get("message_text").asText();
-        if (newMessageText.isBlank() || newMessageText.length() > 254) {
-            ctx.status(400);
-            return;
-        }
+        Message updatedMessage = messageService.updateMessageText(messageId, newMessageText);/*Calling the 
+        updateMessageText() of the messageService (above) with the messageId and newMessageText as arguments
+         to update the message in the database. */
     
-        Message updatedMessage = messageService.updateMessageText(messageId, newMessageText);
-    
-        if (updatedMessage != null) {
-            ctx.json(mapper.writeValueAsString(updatedMessage));
+        if (updatedMessage != null) { /*check if there is updated message */
+            ctx.json(mapper.writeValueAsString(updatedMessage));/*If true, the 
+            updated message is serialized to JSON using the ObjectMapper */
             ctx.status(200);
         } else {
             ctx.status(400);
@@ -87,7 +96,8 @@ public class SocialMediaController {
         Account addedAccount = accountService.registerUser(account.getUsername(), account.getPassword()); /* calling registerUser from service and passing 
         deserialized (conv from JASON to Java) username and password  */
         if(addedAccount!=null){ // if account not null means registration was successful 
-            ctx.json(mapper.writeValueAsString(addedAccount));
+            ctx.json(mapper.writeValueAsString(addedAccount));/* using writeval method(of objectmapper) to convert addedAcc object
+            to its JSON representation as a string. And setting the JSON response body in the response context (ctx).  */
             ctx.status(200);
         }else{ // registration failed 
             ctx.status(400);
@@ -97,11 +107,18 @@ public class SocialMediaController {
 
     /***************************************LOGIN ****************************************************** */
     private void loginHandler(Context ctx) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        Account account = mapper.readValue(ctx.body(), Account.class);
+        ObjectMapper mapper = new ObjectMapper();//new objectmapper class' instance to convert between java and json
+        Account account = mapper.readValue(ctx.body(), Account.class);/* converting json representation 
+        of the object from the ctx request body into an actual object (deserialize) named account. This is done 
+        using the readValue method of the ObjectMapper class.Account.class specifies the class into which the JSON data 
+        will be deserialized. In this case, it's the Account class, which represents the user account information.  */
+        //The ctx object represents the HTTP request context.
         Account loggedInAccount = accountService.loginUser(account.getUsername(), account.getPassword());
+        /*Above, i am calling the loginUser method of the accountService object (an instance of the AccountService class) 
+        to perform the user login process. It passes the username and password extracted from the account object. */
         if (loggedInAccount != null) {
-            ctx.json(mapper.writeValueAsString(loggedInAccount));
+            ctx.json(mapper.writeValueAsString(loggedInAccount));/*The writeValueAsString method of the object mapper, converts the 
+            loggedInAccount object to its JSON representation as a string. */
             ctx.status(200);
         } else {
             ctx.status(401); // Unauthorized
@@ -113,17 +130,20 @@ public class SocialMediaController {
     /*************************************POSTING A MESSAGE ************************************************** */
     private void postMessageHandler(Context ctx) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
+        /*Created objectMapper class instance */
         Message message = mapper.readValue(ctx.body(), Message.class);
+        /*^Deserialized JSON data from the request body */
         if (messageService.userExists(message.getPosted_by())) {
-            Message addedMessage = messageService.createMessage(
+            /*Checking if the user exists */
+            Message addedMessage = messageService.createMessage( // creating a message 
                 message.getPosted_by(),
                 message.getMessage_text(),
                 message.getTime_posted_epoch()
             );
-            if (addedMessage != null) {
+            if (addedMessage != null) { // if message was added, it means that mission success - America has landed!
                 ctx.json(mapper.writeValueAsString(addedMessage));
                 ctx.status(200);
-            } else {
+            } else { // ay no, no tenemos un mensaje, picha!
                 ctx.status(400);
             }
         } else {
@@ -131,14 +151,15 @@ public class SocialMediaController {
         }
     }
 /**************************************DELETING A MESSAGE ************************************************** 
- * @throws SQLException*/
+ * @throws SQLException*/ /*method could throw SQLException ay noooo */
 private void deleteMessageHandler(Context ctx) throws JsonProcessingException, SQLException {
-    ObjectMapper mapper = new ObjectMapper();
-    int messageId = Integer.parseInt(ctx.pathParam("message_id"));
-    Message deletedMessage = messageService.deleteMessage(messageId);
-    if (deletedMessage != null) {
+    ObjectMapper mapper = new ObjectMapper();//creating instance of Object Mapper 
+    int messageId = Integer.parseInt(ctx.pathParam("message_id")); // extracting message_id from request pathParam
+    Message deletedMessage = messageService.deleteMessage(messageId); // deleting message - Adios senorita!
+    if (deletedMessage != null) {//message was found and deleted and saved into deletedMessage object of Message class
       // ctx.json(deletedMessage);
-         ctx.json(mapper.writeValueAsString(deletedMessage));
+         ctx.json(mapper.writeValueAsString(deletedMessage));/*deletedMessage converted in json via objectmapper and
+         set to the ctx body */
         ctx.status(200);
     } else {
         ctx.status(200); // Setting an empty response body when the message is not found
@@ -156,11 +177,11 @@ private void getMessagesByUserHandler(Context ctx) throws JsonProcessingExceptio
 /********************************************RETRIEVE ALL MESSAGES ******************************************** */
 private void getAllMessagesHandler(Context ctx) throws JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper();
-    List<Message> messages = messageService.getAllMessages();
+    List<Message> messages = messageService.getAllMessages();/*retreive all messages and store in the List of type Message */
     
     if (messages != null && !messages.isEmpty()) {
-        ctx.json(mapper.writeValueAsString(messages));
-        ctx.status(200);
+        ctx.json(mapper.writeValueAsString(messages));//returning the response body
+        ctx.status(200);//response status 
     } else {
         ctx.json("[]"); // Return an empty list as JSON representation
         ctx.status(200);
@@ -169,9 +190,10 @@ private void getAllMessagesHandler(Context ctx) throws JsonProcessingException {
 /*************************************RETRIEVE A MESSAGE BY MESSAGE ID ********************************* */
 private void getMessageHandler(Context ctx) throws JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper();
-    int messageId = Integer.parseInt(ctx.pathParam("message_id"));
-    Message message = messageService.getMessageById(messageId);
-    if (message != null) {
+    int messageId = Integer.parseInt(ctx.pathParam("message_id"));/*The message ID is extracted from 
+    the path parameter using ctx.pathParam("message_id"). */
+    Message message = messageService.getMessageById(messageId);// retrieving messsage by id 
+    if (message != null) { 
         ctx.json(mapper.writeValueAsString(message));
         ctx.status(200);
     } else {

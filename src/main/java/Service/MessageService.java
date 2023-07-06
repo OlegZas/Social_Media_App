@@ -56,9 +56,7 @@ createMessage method of the messageDAO object to actually create the message in 
     // public boolean messageExists(int message_id) {
     //     return messageDAO.messageExists(message_id);
     // }
-    // public boolean messageExists(int message_id) {
-    //     return messageDAO.messageExists(message_id);
-    // }
+
 
     public Message updateMessageText(int message_id, String newMessageText) throws SQLException {
         // Check if the message exists

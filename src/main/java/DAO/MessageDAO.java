@@ -88,7 +88,7 @@ public class MessageDAO {
                 messages.add(message); // adding single msg object to the list of messages 
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace();//info about the exception 
         }
         return messages; // returning the list of messages 
     }
@@ -154,11 +154,11 @@ public Message updateMessageText(int message_id, String message_text) throws SQL
     //     }
         Message existingMessage = getMessageById(message_id);
         if (existingMessage == null) {
-            throw new IllegalArgumentException("You did not provide a username bonita!");
+            throw new IllegalArgumentException("no username bonita!");
         }
         // Check if the new message text is not blank and does not exceed 255 characters
         if (message_text == null || message_text.isBlank() || message_text.length() > 255) {
-            throw new IllegalArgumentException("You did not provide a username bonita!");
+            throw new IllegalArgumentException("no username bonita!");
         }else {
 
         // Update the message text
